@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Resume Screener</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .header {
+            background: #1f2937;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin-top: 10px;
+            color: #d1d5db;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 35px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .error {
+            background: #fef2f2;
+            border-left: 5px solid #dc2626;
+            color: #b91c1c;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .result-title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .summary {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        .score {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 20px;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section h3 {
+            margin-bottom: 12px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 9px 0;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        .missing {
+            color: #dc2626;
+        }
+
+        .recommendation {
+            background: #eff6ff;
+            border-left: 5px solid #2563eb;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 8px;
+        }
+
+        .recommendation h3 {
+            margin-top: 0;
+            color: #1d4ed8;
+        }
+
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            padding: 25px;
+            font-size: 14px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h1>AI Resume Screener</h1>
+
+        <p>
+            Analyze resume skills against job requirements
+        </p>
+
+    </div>
+
+
+    <div class="container">
+
+        <div class="card">
+
+            {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <label>
+                    Upload Resume (PDF)
+                </label>
+
+                <input
+                    type="file"
+                    name="resume"
+                    accept=".pdf"
+                    required
+                >
+
+                <label>
+                    Job Description
+                </label>
+
+                <textarea
+                    name="job_description"
+                    rows="10"
+                    placeholder="Paste the job description here..."
+                    required
+                ></textarea>
+
+                <button type="submit">
+                    Analyze Resume
+                </button>
+
+            </form>
+
+        </div>
+
+
+        {% if result %}
+
+        <div class="card">
+
+            <h2 class="result-title">
+                Screening Result
+            </h2>
+
+            <p class="summary">
+                {{ result.matched_count }}
+                out of
+                {{ result.required_count }}
+                required skills detected in your resume.
+            </p>
+
+            <div class="score">
+                {{ result.match_score }}%
+            </div>
+
+            <div class="progress-container">
+
+                <div
+                    class="progress-bar"
+                    style="width: {{ result.match_score }}%;">
+                </div>
+
+            </div>
+
+
+            <div class="section">
+
+                <h3 class="success">
+                    ✅ Matched Skills
+                </h3>
+
+                {% if result.matched_skills %}
+
+                <ul>
+
+                    {% for skill in result.matched_skills %}
+
+                    <li>
+                        {{ skill }}
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+                {% else %}
+
+                <p>
+                    No matching skills found.
+                </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="section">
+
+                <h3 class="missing">
+                    ❌ Missing Skills
+                </h3>
+
+                {% if result.missing_skills %}
+
+                <ul>
+
+                    {% for skill in result.missing_skills %}
+
+                    <li>
+                        {{ skill }}
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+                {% else %}
+
+                <p>
+                    No missing skills.
+                </p>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if result.recommended_skills %}
+
+            <div class="recommendation">
+
+                <h3>
+                    💡 Recommended Skills to Learn
+                </h3>
+
+                <ul>
+
+                    {% for skill in result.recommended_skills %}
+
+                    <li>
+                        {{ skill }}
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+                <p>
+                    These skills appear in the job description
+                    but were not detected in the uploaded resume.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="footer">
+
+        AI Resume Screener • Built with Python, Flask and OCR
+
+    </div>
+
+</body>
+
+</html>
